@@ -62,4 +62,5 @@ EMOJI-GENERATOR-CURSOR
     └── tsconfig.json
 
 # Rules
-xxxx
+- All new components should go in /components and be named like example-component.tsx unless otherwise specified
+- All new pages should go in /app unless otherwise specified
