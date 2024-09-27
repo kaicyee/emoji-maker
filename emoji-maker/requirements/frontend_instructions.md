@@ -6,7 +6,7 @@ Use this guide to build a web app where users can give a text prompt to generate
 - Create a form where users can put in a prompt, and clicking on a button that calls the Replicate model to generate emoji
 - Have a nice UI & animation when the emoji is blank or generating
 - Display all the images ever generated in a grid
-- When hovering over each emoji image, an icon button for download and an icon button for like should be shown up
+- When hovering over each emoji image, an icon button for download and an icon button for like should show up
 
 # Relevant docs
 ## How to use replicate emoji generator model
@@ -48,6 +48,7 @@ EMOJI-GENERATOR-CURSOR
     ├── node_modules
     ├── requirements
     │   └── frontend_instructions.md
+    │   └── mockup.png
     ├── .eslintrc.json
     ├── .gitignore
     ├── components.json
@@ -62,4 +63,5 @@ EMOJI-GENERATOR-CURSOR
     └── tsconfig.json
 
 # Rules
-xxxx
+- All new components should go in /components and be named like example-component.tsx unless otherwise specified
+- All new pages should go in /app unless otherwise specified
