@@ -23,13 +23,17 @@ export default function EmojiGenerator() {
         body: JSON.stringify({ prompt }),
       });
       const data = await response.json();
-      if (data.success) {
-        setGeneratedEmoji(data.emoji);
+      console.log('API Response:', data);
+      if (data.success && Array.isArray(data.emoji) && data.emoji.length > 0) {
+        console.log('Setting emoji URL:', data.emoji[0]);
+        setGeneratedEmoji(data.emoji[0]);
       } else {
-        console.error('Failed to generate emoji:', data.error);
+        console.error('Failed to generate emoji:', data.error || 'No emoji URL returned');
+        setGeneratedEmoji(null);
       }
     } catch (error) {
       console.error('Error generating emoji:', error);
+      setGeneratedEmoji(null);
     }
     setIsLoading(false);
   };
@@ -46,10 +50,12 @@ export default function EmojiGenerator() {
           {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Generate'}
         </Button>
       </div>
-      {generatedEmoji && (
+      {generatedEmoji ? (
         <div className="flex justify-center">
           <Image src={generatedEmoji} alt="Generated Emoji" width={200} height={200} />
         </div>
+      ) : (
+        <p>No emoji generated yet.</p> // Optional placeholder text
       )}
     </Card>
   );

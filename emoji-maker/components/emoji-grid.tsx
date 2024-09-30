@@ -13,8 +13,8 @@ type Emoji = {
 
 export default function EmojiGrid() {
   const [emojis, setEmojis] = useState<Emoji[]>([
-    { id: 1, url: 'https://placekitten.com/200/200', liked: false },
-    { id: 2, url: 'https://placekitten.com/201/201', liked: true },
+    { id: 1, url: 'https://picsum.photos/200/200', liked: false },
+    { id: 2, url: 'https://picsum.photos/201/201', liked: true },
     // Add more placeholder emojis as needed
   ]);
 
