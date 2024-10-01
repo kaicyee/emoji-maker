@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -7,12 +8,16 @@ import { Card } from './ui/card';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 
-export default function EmojiGenerator() {
+interface EmojiGeneratorProps {
+  addEmoji: (emoji: string) => void;
+}
+
+const EmojiGenerator: React.FC<EmojiGeneratorProps> = ({ addEmoji }) => {
   const [prompt, setPrompt] = useState('');
   const [generatedEmoji, setGeneratedEmoji] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const generateEmoji = async () => {
+  const handleGenerateEmoji = async () => {
     setIsLoading(true);
     try {
       const response = await fetch('/api/generate-emoji', {
@@ -27,6 +32,7 @@ export default function EmojiGenerator() {
       if (data.success && Array.isArray(data.emoji) && data.emoji.length > 0) {
         console.log('Setting emoji URL:', data.emoji[0]);
         setGeneratedEmoji(data.emoji[0]);
+        addEmoji(data.emoji[0]);
       } else {
         console.error('Failed to generate emoji:', data.error || 'No emoji URL returned');
         setGeneratedEmoji(null);
@@ -46,7 +52,7 @@ export default function EmojiGenerator() {
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
         />
-        <Button onClick={generateEmoji} disabled={isLoading}>
+        <Button onClick={handleGenerateEmoji} disabled={isLoading}>
           {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Generate'}
         </Button>
       </div>
@@ -59,4 +65,6 @@ export default function EmojiGenerator() {
       )}
     </Card>
   );
-}
+};
+
+export default EmojiGenerator;
