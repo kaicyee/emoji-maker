@@ -1,7 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-const isProtectedRoute = createRouteMatcher(["/"]);
+const isProtectedRoute = createRouteMatcher(["/"]); // Add more protected routes as needed
 
 export default clerkMiddleware(async (auth, req) => {
   const { userId, redirectToSignIn } = auth();
@@ -15,8 +15,16 @@ export default clerkMiddleware(async (auth, req) => {
   if (userId && isProtectedRoute(req)) {
     return NextResponse.next();
   }
+
+  // For all other cases, continue with the default Clerk middleware behavior
+  return NextResponse.next();
 });
 
 export const config = {
-  matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    "/((?!.*\\..*).*)",
+    "/",
+    "/(api|trpc)(.*)",
+  ],
 };
