@@ -5,7 +5,7 @@ import {
   ClerkProvider,
 } from '@clerk/nextjs'
 import Header from '@/components/headers';
-
+import UserProfileInitializer from '@/components/UserProfileInitializer';
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -33,6 +33,7 @@ export default function RootLayout({
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} font-sans`}>
           <Header />
+          <UserProfileInitializer />
           {children}
         </body>
       </html>
