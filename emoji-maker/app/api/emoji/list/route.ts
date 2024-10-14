@@ -15,17 +15,14 @@ export async function GET() {
   }
 
   try {
-    // Step 1: Fetch all emojis from the 'emojis' table
     const { data, error } = await supabase
       .from('emojis')
-      .select('id, image_url, prompt, likes_count, creator_user_id, created_at')
+      .select('*')
+      .eq('creator_user_id', userId)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
 
-    console.log('Fetched emojis:', data); // Add this line for debugging
-
-    // Step 2: Return the fetched emojis
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error fetching emojis:', error);

@@ -64,7 +64,7 @@ export default function EmojiGrid({ emojis, onLike }: EmojiGridProps) {
             />
           </div>
           <p className="text-sm truncate w-full text-center">{emoji.prompt}</p>
-          <p className="text-xs text-gray-500">Likes: {emoji.likes_count}</p>
+          <p className="text-xs text-gray-500">Likes: {emoji.likes_count + (likedEmojis.has(emoji.id) ? 1 : 0)}</p>
           <div className="flex space-x-4 mt-2">
             <button 
               onClick={() => toggleLike(emoji.id)}
