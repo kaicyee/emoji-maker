@@ -12,6 +12,7 @@ interface Emoji {
   likes_count: number;
   creator_user_id: string;
   created_at: string;
+  is_liked?: boolean;
 }
 
 export default function Home() {
@@ -40,40 +41,12 @@ export default function Home() {
     setEmojis(prevEmojis => [newEmoji, ...prevEmojis]);
   };
 
-  const handleLike = async (id: number, liked: boolean) => {
-    try {
-      const response = await fetch('/api/emoji/like', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ emojiId: id, like: liked }),
-      });
-
-      if (response.ok) {
-        setEmojis(prevEmojis =>
-          prevEmojis.map(emoji =>
-            emoji.id === id
-              ? { ...emoji, likes_count: liked ? emoji.likes_count + 1 : Math.max(0, emoji.likes_count - 1) }
-              : emoji
-          )
-        );
-      }
-    } catch (error) {
-      console.error('Error updating like:', error);
-    }
-  };
-
-  if (!isLoaded || !userId) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <main className="flex min-h-screen flex-col items-center p-12">
       <h1 className="text-4xl font-bold mb-8">Emoji Generator</h1>
       <EmojiGenerator addEmoji={addEmoji} />
       <div className="w-full mt-12">
-        <EmojiGrid emojis={emojis} onLike={handleLike} />
+        <EmojiGrid emojis={emojis} setEmojis={setEmojis} />
       </div>
     </main>
   );

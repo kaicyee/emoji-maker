@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Heart, Download } from 'lucide-react';
+import { useAuth } from '@clerk/nextjs';
 
 interface Emoji {
   id: number;
@@ -11,15 +12,36 @@ interface Emoji {
   likes_count: number;
   creator_user_id: string;
   created_at: string;
+  is_liked?: boolean;
 }
 
 interface EmojiGridProps {
   emojis: Emoji[];
-  onLike: (id: number, liked: boolean) => void;
+  setEmojis: React.Dispatch<React.SetStateAction<Emoji[]>>;
 }
 
-export default function EmojiGrid({ emojis, onLike }: EmojiGridProps) {
-  const [likedEmojis, setLikedEmojis] = useState<Set<number>>(new Set());
+export default function EmojiGrid({ emojis, setEmojis }: EmojiGridProps) {
+  const { userId } = useAuth();
+
+  useEffect(() => {
+    if (userId) {
+      fetchLikeStatuses();
+    }
+  }, [userId, emojis]);
+
+  const fetchLikeStatuses = async () => {
+    const updatedEmojis = await Promise.all(
+      emojis.map(async (emoji) => {
+        const response = await fetch(`/api/emoji/like-status?emojiId=${emoji.id}`);
+        if (response.ok) {
+          const { is_liked } = await response.json();
+          return { ...emoji, is_liked };
+        }
+        return emoji;
+      })
+    );
+    setEmojis(updatedEmojis);
+  };
 
   const toggleLike = async (id: number) => {
     try {
@@ -47,47 +69,21 @@ export default function EmojiGrid({ emojis, onLike }: EmojiGridProps) {
     }
   };
 
-  const handleDownload = async (imageUrl: string, prompt: string) => {
-    try {
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${prompt.replace(/\s+/g, '-')}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error('Error downloading image:', error);
-    }
-  };
-
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
       {emojis.map((emoji) => (
         <div key={emoji.id} className="flex flex-col items-center bg-white rounded-lg shadow-md p-4">
-          <div className="relative w-full h-48 mb-2">
-            <Image
-              src={emoji.image_url}
-              alt={emoji.prompt}
-              layout="fill"
-              objectFit="contain"
-            />
-          </div>
-          <p className="text-sm truncate w-full text-center">{emoji.prompt}</p>
-          <p className="text-xs text-gray-500">Likes: {emoji.likes_count + (likedEmojis.has(emoji.id) ? 1 : 0)}</p>
+          <Image src={emoji.image_url} alt={emoji.prompt} width={200} height={200} />
+          <p className="mt-2 text-center">{emoji.prompt}</p>
+          <p className="text-xs text-gray-500">Likes: {emoji.likes_count}</p>
           <div className="flex space-x-4 mt-2">
             <button 
               onClick={() => toggleLike(emoji.id)}
-              className={`p-1 rounded-full ${likedEmojis.has(emoji.id) ? 'text-red-500' : 'text-gray-500'}`}
+              className={`p-1 rounded-full ${emoji.is_liked ? 'text-red-500' : 'text-gray-500'}`}
             >
-              <Heart size={20} fill={likedEmojis.has(emoji.id) ? 'currentColor' : 'none'} />
+              <Heart size={20} fill={emoji.is_liked ? 'currentColor' : 'none'} />
             </button>
-            <button 
-              onClick={() => handleDownload(emoji.image_url, emoji.prompt)}
-              className="p-1 rounded-full text-gray-500 hover:text-gray-700"
-            >
+            <button className="p-1 rounded-full text-gray-500 hover:text-gray-700">
               <Download size={20} />
             </button>
           </div>

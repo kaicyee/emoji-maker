@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   const { emojiId } = await request.json();
 
   try {
-    // First, check if the user has already liked this emoji
+    // Check if the user has already liked this emoji
     const { data: existingLike, error: likeError } = await supabase
       .from('user_likes')
       .select('*')
@@ -26,38 +26,32 @@ export async function POST(request: Request) {
 
     if (likeError && likeError.code !== 'PGRST116') throw likeError;
 
+    let is_liked: boolean;
+    let likes_count: number;
+
     if (existingLike) {
-      // User has already liked, so remove the like
+      // Unlike
       await supabase
         .from('user_likes')
         .delete()
         .eq('user_id', userId)
         .eq('emoji_id', emojiId);
 
-      await supabase.rpc('decrement_likes', { p_emoji_id: emojiId });
+      const { data: updatedEmoji } = await supabase.rpc('decrement_likes', { p_emoji_id: emojiId });
+      likes_count = updatedEmoji.likes_count;
+      is_liked = false;
     } else {
-      // User hasn't liked, so add the like
+      // Like
       await supabase
         .from('user_likes')
         .insert({ user_id: userId, emoji_id: emojiId });
 
-      await supabase.rpc('increment_likes', { p_emoji_id: emojiId });
+      const { data: updatedEmoji } = await supabase.rpc('increment_likes', { p_emoji_id: emojiId });
+      likes_count = updatedEmoji.likes_count;
+      is_liked = true;
     }
 
-    // Get the updated likes count
-    const { data: updatedEmoji, error: emojiError } = await supabase
-      .from('emojis')
-      .select('likes_count')
-      .eq('id', emojiId)
-      .single();
-
-    if (emojiError) throw emojiError;
-
-    return NextResponse.json({ 
-      success: true, 
-      likes_count: updatedEmoji.likes_count,
-      is_liked: !existingLike 
-    });
+    return NextResponse.json({ success: true, likes_count, is_liked });
   } catch (error) {
     console.error('Error updating likes:', error);
     return NextResponse.json({ error: 'Failed to update likes' }, { status: 500 });
