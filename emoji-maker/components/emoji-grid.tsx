@@ -21,18 +21,30 @@ interface EmojiGridProps {
 export default function EmojiGrid({ emojis, onLike }: EmojiGridProps) {
   const [likedEmojis, setLikedEmojis] = useState<Set<number>>(new Set());
 
-  const toggleLike = (id: number) => {
-    setLikedEmojis(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-        onLike(id, false);
-      } else {
-        newSet.add(id);
-        onLike(id, true);
+  const toggleLike = async (id: number) => {
+    try {
+      const response = await fetch('/api/emoji/like', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ emojiId: id }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update like');
       }
-      return newSet;
-    });
+
+      const { likes_count, is_liked } = await response.json();
+
+      setEmojis(prevEmojis =>
+        prevEmojis.map(emoji =>
+          emoji.id === id ? { ...emoji, likes_count, is_liked } : emoji
+        )
+      );
+    } catch (error) {
+      console.error('Error updating like:', error);
+    }
   };
 
   const handleDownload = async (imageUrl: string, prompt: string) => {
